@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GreenLoop - Waste Management Platform</title>
+    <!-- Theme initialization - prevents flash -->
+    <script>
+      (function () {
+        try {
+          const stored = localStorage.getItem("greenloop-theme");
+          if (stored) {
+            const { state } = JSON.parse(stored);
+            const theme = state?.theme || "system";
+            let resolvedTheme = theme;
+
+            if (theme === "system") {
+              resolvedTheme = window.matchMedia("(prefers-color-scheme: dark)")
+                .matches
+                ? "dark"
+                : "light";
+            }
+
+            if (resolvedTheme === "dark") {
+              document.documentElement.classList.add("dark");
+            } else {
+              document.documentElement.classList.remove("dark");
+            }
+          }
+        } catch (e) {
+          // Fallback to light theme if error
+          document.documentElement.classList.remove("dark");
+        }
+      })();
+    </script>
+    <!-- Suppress Chrome Extension Errors -->
+    <script>
+      // Filter out Chrome extension errors from console
+      if (typeof window !== "undefined") {
+        const originalError = console.error;
+        console.error = function (...args) {
+          const message = args[0];
+          // Ignore Chrome extension errors
+          if (
+            typeof message === "string" &&
+            (message.includes("runtime.lastError") ||
+              message.includes("Receiving end does not exist"))
+          ) {
+            return;
+          }
+          originalError.apply(console, args);
+        };
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

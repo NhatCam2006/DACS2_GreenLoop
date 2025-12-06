@@ -1,0 +1,192 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider        = "prisma-client"
+  previewFeatures = ["fullTextSearchPostgres"]
+  output          = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum UserRole {
+  DONOR
+  COLLECTOR
+  ADMIN
+}
+
+enum AddressSource {
+  MANUAL
+  GEOCODED
+}
+
+enum DonationStatus {
+  PENDING
+  ACCEPTED
+  COMPLETED
+  CANCELLED
+}
+
+enum TransactionType {
+  EARN
+  REDEEM
+}
+
+model User {
+  id               String            @id @default(uuid())
+  email            String            @unique
+  passwordHash     String
+  fullName         String
+  phone            String?
+  role             UserRole          @default(DONOR)
+  points           Int               @default(0)
+  isActive         Boolean           @default(true)
+  lastLoginAt      DateTime?
+  addresses        Address[]
+  donationRequests DonationRequest[]
+  collections      Collection[]
+  transactions     Transaction[]
+  notifications    Notification[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model Address {
+  id               String            @id @default(uuid())
+  user             User              @relation(fields: [userId], references: [id])
+  userId           String
+  street           String
+  ward             String?
+  district         String?
+  city             String?
+  latitude         Float?
+  longitude        Float?
+  source           AddressSource     @default(MANUAL)
+  isPrimary        Boolean           @default(false)
+  manualAddress    ManualAddress?
+  donationRequests DonationRequest[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model ManualAddress {
+  id          String  @id @default(uuid())
+  address     Address @relation(fields: [addressId], references: [id])
+  addressId   String  @unique
+  note        String?
+  placeHints  String?
+  contactName String?
+}
+
+model RequestLog {
+  id        String   @id @default(uuid())
+  action    String
+  payload   Json
+  createdAt DateTime @default(now())
+}
+
+model WasteCategory {
+  id               String            @id @default(uuid())
+  name             String            @unique
+  description      String?
+  pointsPerKg      Float             @default(0)
+  isActive         Boolean           @default(true)
+  iconUrl          String?
+  donationRequests DonationRequest[]
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+}
+
+model DonationRequest {
+  id              String         @id @default(uuid())
+  donor           User           @relation(fields: [donorId], references: [id])
+  donorId         String
+  wasteCategory   WasteCategory  @relation(fields: [wasteCategoryId], references: [id])
+  wasteCategoryId String
+  estimatedWeight Float
+  actualWeight    Float?
+  status          DonationStatus @default(PENDING)
+  imageUrls       String[]
+  address         Address        @relation(fields: [addressId], references: [id])
+  addressId       String
+  notes           String?
+  preferredDate   DateTime?
+  collection      Collection?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  @@index([donorId])
+  @@index([status])
+  @@index([wasteCategoryId])
+}
+
+model Collection {
+  id                 String          @id @default(uuid())
+  donationRequest    DonationRequest @relation(fields: [donationRequestId], references: [id])
+  donationRequestId  String          @unique
+  collector          User            @relation(fields: [collectorId], references: [id])
+  collectorId        String
+  collectedAt        DateTime?
+  verificationNotes  String?
+  verificationImages String[]
+  verificationCode   String?         // OTP for handshake
+  pointsAwarded      Float?
+  createdAt          DateTime        @default(now())
+  updatedAt          DateTime        @updatedAt
+
+  @@index([collectorId])
+}
+
+model Transaction {
+  id          String          @id @default(uuid())
+  user        User            @relation(fields: [userId], references: [id])
+  userId      String
+  type        TransactionType
+  amount      Float
+  description String
+  relatedId   String?
+  createdAt   DateTime        @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Reward {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  pointsCost  Float
+  imageUrl    String?
+  stock       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+enum NotificationType {
+  DONATION_ACCEPTED
+  DONATION_COMPLETED
+  REWARD_REDEEMED
+  POINTS_EARNED
+  SYSTEM
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  user      User             @relation(fields: [userId], references: [id])
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  isRead    Boolean          @default(false)
+  relatedId String?
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}

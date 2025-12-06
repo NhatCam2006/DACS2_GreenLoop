@@ -1,0 +1,206 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 font-body antialiased;
+    @apply dark:bg-slate-900 dark:text-gray-100;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-heading font-semibold tracking-tight;
+    @apply dark:text-white;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-gray-100 rounded-full;
+    @apply dark:bg-slate-800;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-gray-300 rounded-full hover:bg-gray-400 transition-colors;
+    @apply dark:bg-slate-600 dark:hover:bg-slate-500;
+  }
+
+  /* Selection color */
+  ::selection {
+    @apply bg-green-500/20 text-green-900;
+    @apply dark:bg-green-500/30 dark:text-green-100;
+  }
+
+  /* Dark mode specific */
+  .dark {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-white/70 backdrop-blur-xl border border-white/20;
+    @apply dark:bg-slate-800/70 dark:border-slate-700/30;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-gradient-to-r from-green-600 via-emerald-500 to-teal-500 bg-clip-text text-transparent;
+  }
+
+  /* Dark mode gradient text */
+  .dark .gradient-text {
+    @apply from-green-400 via-emerald-400 to-teal-400;
+  }
+
+  /* Floating animation */
+  .float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  /* Glow effect */
+  .glow {
+    @apply shadow-xl shadow-green-500/25;
+    @apply dark:shadow-green-500/15;
+  }
+
+  .glow-blue {
+    @apply shadow-xl shadow-blue-500/25;
+    @apply dark:shadow-blue-500/15;
+  }
+
+  .glow-purple {
+    @apply shadow-xl shadow-purple-500/25;
+    @apply dark:shadow-purple-500/15;
+  }
+
+  /* Dark mode cards */
+  .card-dark {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+    @apply dark:bg-slate-800 dark:border-slate-700 dark:shadow-slate-900/20;
+  }
+
+  /* Dark mode input */
+  .input-dark {
+    @apply bg-white border border-gray-300 text-gray-900 placeholder:text-gray-500;
+    @apply dark:bg-slate-800 dark:border-slate-600 dark:text-gray-100 dark:placeholder:text-gray-400;
+    @apply focus:ring-2 focus:ring-green-500/20 focus:border-green-500;
+    @apply dark:focus:ring-green-500/30 dark:focus:border-green-400;
+  }
+
+  /* Dark mode button */
+  .btn-dark {
+    @apply dark:hover:bg-slate-700;
+  }
+
+  /* Dark mode divider */
+  .divider-dark {
+    @apply border-gray-200 dark:border-slate-700;
+  }
+
+  /* Dark mode text utilities */
+  .text-primary-dark {
+    @apply text-gray-900 dark:text-white;
+  }
+
+  .text-secondary-dark {
+    @apply text-gray-600 dark:text-gray-300;
+  }
+
+  .text-muted-dark {
+    @apply text-gray-500 dark:text-gray-400;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Animation utilities */
+  @keyframes float {
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  @keyframes shimmer {
+    0% {
+      background-position: -200% 0;
+    }
+    100% {
+      background-position: 200% 0;
+    }
+  }
+
+  @keyframes pulse-glow {
+    0%,
+    100% {
+      box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+    50% {
+      box-shadow: 0 0 40px rgba(34, 197, 94, 0.5);
+    }
+  }
+
+  @keyframes gradient-shift {
+    0%,
+    100% {
+      background-position: 0% 50%;
+    }
+    50% {
+      background-position: 100% 50%;
+    }
+  }
+
+  .animate-shimmer {
+    animation: shimmer 2s linear infinite;
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-gradient {
+    background-size: 200% 200%;
+    animation: gradient-shift 3s ease infinite;
+  }
+
+  /* Staggered animation delays */
+  .delay-100 {
+    animation-delay: 100ms;
+  }
+  .delay-200 {
+    animation-delay: 200ms;
+  }
+  .delay-300 {
+    animation-delay: 300ms;
+  }
+  .delay-400 {
+    animation-delay: 400ms;
+  }
+  .delay-500 {
+    animation-delay: 500ms;
+  }
+}
