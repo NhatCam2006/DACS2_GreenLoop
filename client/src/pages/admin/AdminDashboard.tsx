@@ -30,7 +30,7 @@ export const AdminDashboard = () => {
     queryKey: ["admin", "users"],
     queryFn: async () => {
       const response = await apiClient.get("/users");
-      return response.data.users;
+      return response.data || [];
     },
     retry: 1,
   });
@@ -39,7 +39,7 @@ export const AdminDashboard = () => {
     queryKey: ["waste-categories"],
     queryFn: async () => {
       const response = await apiClient.get("/waste-categories");
-      return response.data.categories;
+      return response.data || [];
     },
     retry: 1,
   });
@@ -48,7 +48,7 @@ export const AdminDashboard = () => {
     queryKey: ["rewards"],
     queryFn: async () => {
       const response = await apiClient.get("/rewards");
-      return response.data.rewards;
+      return response.data || [];
     },
     retry: 1,
   });
@@ -57,7 +57,7 @@ export const AdminDashboard = () => {
     queryKey: ["admin", "donations"],
     queryFn: async () => {
       const response = await apiClient.get("/donation-requests");
-      return response.data.requests;
+      return response.data || [];
     },
     retry: 1,
   });
