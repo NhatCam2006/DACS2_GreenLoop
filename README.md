@@ -92,7 +92,14 @@ JWT_EXPIRES_IN="7d"
 NODE_ENV="development"
 PORT=4000
 API_KEY="your-gemini-api-key"
+
+# Cloudinary (optional - for cloud image storage)
+CLOUDINARY_CLOUD_NAME="your_cloud_name"
+CLOUDINARY_API_KEY="your_api_key"
+CLOUDINARY_API_SECRET="your_api_secret"
 ```
+
+> **Note**: Cloudinary is optional. If not configured, images will be stored locally in `server/uploads/`. Get free credentials at https://cloudinary.com/console
 
 ### Client (.env)
 
