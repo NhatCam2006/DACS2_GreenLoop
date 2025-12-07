@@ -1,11 +1,22 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Container } from "../../components/layout/Container";
 import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { apiClient } from "../../lib/api-client";
-import { Gift, Plus, Edit2, Trash2, Save, X, Package } from "lucide-react";
+import {
+  Gift,
+  Plus,
+  Edit2,
+  Trash2,
+  Save,
+  X,
+  Package,
+  Upload,
+  Image,
+  Loader2,
+} from "lucide-react";
 import toast from "react-hot-toast";
 
 interface Reward {
@@ -22,6 +33,9 @@ export const RewardManagementPage = () => {
   const queryClient = useQueryClient();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
   const [formData, setFormData] = useState({
     name: "",
     description: "",
@@ -29,6 +43,72 @@ export const RewardManagementPage = () => {
     stock: 0,
     imageUrl: "",
   });
+
+  // Upload image to Cloudinary
+  const handleImageUpload = async (file: File) => {
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please select an image file");
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size must be less than 5MB");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("image", file);
+
+      const response = await apiClient.post(
+        "/upload?folder=rewards",
+        formDataUpload,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
+
+      setFormData((prev) => ({ ...prev, imageUrl: response.data.imageUrl }));
+      toast.success("Image uploaded successfully!");
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error("Failed to upload image");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Upload image from URL to Cloudinary
+  const handleUploadFromUrl = async (url: string) => {
+    if (!url) return;
+
+    // Validate URL format
+    try {
+      new URL(url);
+    } catch {
+      toast.error("Invalid URL format");
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const response = await apiClient.post("/upload/from-url", { url });
+      setFormData((prev) => ({ ...prev, imageUrl: response.data.imageUrl }));
+      toast.success("Image uploaded to cloud successfully!");
+    } catch (error) {
+      console.error("Upload from URL error:", error);
+      toast.error("Failed to upload image from URL");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const {
     data: rewards,
@@ -318,14 +398,79 @@ export const RewardManagementPage = () => {
                   placeholder="50"
                 />
                 <div className="md:col-span-2">
-                  <Input
-                    label="Image URL"
-                    value={formData.imageUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, imageUrl: e.target.value })
-                    }
-                    placeholder="https://example.com/image.jpg"
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Reward Image
+                  </label>
+                  <div className="flex items-center gap-4">
+                    {/* Image Preview */}
+                    <div className="w-24 h-24 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                      {formData.imageUrl ? (
+                        <img
+                          src={formData.imageUrl}
+                          alt="Preview"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Image className="w-8 h-8 text-gray-400" />
+                      )}
+                    </div>
+
+                    {/* Upload Button */}
+                    <div className="flex-1 space-y-2">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleImageUpload(file);
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className="w-full"
+                      >
+                        {isUploading ? (
+                          <>
+                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                            Uploading...
+                          </>
+                        ) : (
+                          <>
+                            <Upload className="h-4 w-4 mr-2" />
+                            Upload Image
+                          </>
+                        )}
+                      </Button>
+                      <div className="flex gap-2">
+                        <Input
+                          value={formData.imageUrl}
+                          onChange={(e) =>
+                            setFormData({
+                              ...formData,
+                              imageUrl: e.target.value,
+                            })
+                          }
+                          placeholder="Or paste image URL..."
+                          className="text-sm flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleUploadFromUrl(formData.imageUrl)}
+                          disabled={isUploading || !formData.imageUrl}
+                          title="Upload URL to Cloud"
+                        >
+                          <Upload className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
               <div className="flex gap-2">
@@ -403,16 +548,84 @@ export const RewardManagementPage = () => {
                               })
                             }
                           />
-                          <Input
-                            label="Image URL"
-                            value={formData.imageUrl}
-                            onChange={(e) =>
-                              setFormData({
-                                ...formData,
-                                imageUrl: e.target.value,
-                              })
-                            }
-                          />
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                              Reward Image
+                            </label>
+                            <div className="flex items-center gap-3">
+                              <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center overflow-hidden bg-gray-50">
+                                {formData.imageUrl ? (
+                                  <img
+                                    src={formData.imageUrl}
+                                    alt="Preview"
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <Image className="w-6 h-6 text-gray-400" />
+                                )}
+                              </div>
+                              <div className="flex-1 space-y-2">
+                                <input
+                                  type="file"
+                                  ref={editFileInputRef}
+                                  className="hidden"
+                                  accept="image/*"
+                                  onChange={(e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) handleImageUpload(file);
+                                  }}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() =>
+                                    editFileInputRef.current?.click()
+                                  }
+                                  disabled={isUploading}
+                                  className="w-full"
+                                >
+                                  {isUploading ? (
+                                    <>
+                                      <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                      Uploading...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Upload className="h-3 w-3 mr-1" />
+                                      Upload
+                                    </>
+                                  )}
+                                </Button>
+                                <div className="flex gap-1">
+                                  <Input
+                                    value={formData.imageUrl}
+                                    onChange={(e) =>
+                                      setFormData({
+                                        ...formData,
+                                        imageUrl: e.target.value,
+                                      })
+                                    }
+                                    placeholder="Or paste URL..."
+                                    className="text-xs flex-1"
+                                  />
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() =>
+                                      handleUploadFromUrl(formData.imageUrl)
+                                    }
+                                    disabled={isUploading || !formData.imageUrl}
+                                    title="Upload URL to Cloud"
+                                    className="px-2"
+                                  >
+                                    <Upload className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
                         </div>
                         <div className="flex gap-2">
                           <Button onClick={handleSave} size="sm">

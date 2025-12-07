@@ -158,11 +158,15 @@ export const NewDonationPage = () => {
     formData.append("image", file);
 
     try {
-      const response = await apiClient.post("/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+      const response = await apiClient.post(
+        "/upload?folder=donations",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        }
+      );
 
       setFormData((prev) => ({
         ...prev,
