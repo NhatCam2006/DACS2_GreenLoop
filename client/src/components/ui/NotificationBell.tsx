@@ -27,6 +27,7 @@ interface Notification {
 export const NotificationBell = () => {
   const { isAuthenticated } = useAuthStore();
   const [isOpen, setIsOpen] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const queryClient = useQueryClient();
 
@@ -185,7 +186,25 @@ export const NotificationBell = () => {
                           <p className="text-sm font-medium text-gray-900 dark:text-white">
                             {notification.title}
                           </p>
-                          <p className="text-sm text-gray-600 dark:text-gray-300 mt-0.5 line-clamp-2">
+                          <p
+                            className={`text-sm text-gray-600 dark:text-gray-300 mt-0.5 cursor-pointer ${
+                              expandedId === notification.id
+                                ? ""
+                                : "line-clamp-2"
+                            }`}
+                            onClick={() =>
+                              setExpandedId(
+                                expandedId === notification.id
+                                  ? null
+                                  : notification.id
+                              )
+                            }
+                            title={
+                              expandedId === notification.id
+                                ? "Click to collapse"
+                                : "Click to expand"
+                            }
+                          >
                             {notification.message}
                           </p>
                           <p className="text-xs text-gray-400 mt-1">

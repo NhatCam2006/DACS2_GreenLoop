@@ -87,13 +87,18 @@ export const notificationService = {
     donorId: string,
     collectorName: string,
     categoryName: string,
-    donationRequestId: string
+    donationRequestId: string,
+    verificationCode?: string
   ) => {
+    const codeMessage = verificationCode
+      ? `\n\n🔐 Mã xác nhận: ${verificationCode}\n(Cung cấp mã này cho collector khi họ đến thu gom)`
+      : "";
+
     return notificationService.create({
       userId: donorId,
       type: "DONATION_ACCEPTED",
       title: "Donation Request Accepted! 🎉",
-      message: `${collectorName} has accepted your ${categoryName} donation request. Please prepare your items for collection.`,
+      message: `${collectorName} has accepted your ${categoryName} donation request. Please prepare your items for collection.${codeMessage}`,
       relatedId: donationRequestId,
     });
   },

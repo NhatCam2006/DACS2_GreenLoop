@@ -265,13 +265,14 @@ export const donationRequestService = {
       return { collection, request: updatedRequest };
     });
 
-    // Send notification to donor (outside transaction)
+    // Send notification to donor with verification code (outside transaction)
     try {
       await notificationService.notifyDonationAccepted(
         request.donorId,
         collector?.fullName || "A collector",
         request.wasteCategory?.name || "your",
-        donationRequestId
+        donationRequestId,
+        result.collection.verificationCode || undefined
       );
     } catch (e) {
       console.error("Failed to send notification:", e);
