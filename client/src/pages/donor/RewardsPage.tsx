@@ -24,7 +24,7 @@ export const RewardsPage = () => {
 
   const redeemMutation = useMutation({
     mutationFn: async (rewardId: string) => {
-      const response = await apiClient.post(`/rewards/${rewardId}/redeem`);
+      const response = await apiClient.post(`/rewards/redeem`, { rewardId });
       return response.data;
     },
     onSuccess: () => {
